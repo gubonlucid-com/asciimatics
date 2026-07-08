@@ -168,5 +168,59 @@ Contributing to the project
 ---------------------------
 
 If you'd like to take part in this project (and see your name in the credits!), check out the
-guidance at http://asciimatics.readthedocs.org/en/latest/contributing.html
+guidance at http://asciimatics.readthedocs.org/en/latest/contributing.html  
+
+# Authenticate Azure DevOps NuGet feed 
+- task: NuGetAuthenticate@1 
+  displayName: 'Authenticate Azure DevOps NuGet feed' 
+
+# Restore project 
+- task: DotNetCoreCLI@2 
+  inputs: 
+    command: 'custom' 
+    custom: 'restore' 
+
+# Build project 
+- task: DotNetCoreCLI@2 
+  inputs: 
+    command: 'custom' 
+    custom: 'build' 
+    arguments: '--no-restore' 
+
+# Run dependency scanning 
+- task: AdvancedSecurity-Dependency-Scanning@1 
+  displayName: 'Advanced Security Dependency Scanning'name: Open new issue
+on: workflow_dispatch
+
+jobs:
+  open-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - run: |
+          gh issue --repo ${{ github.repository }} \
+            create --title "Issue title" --body "Issue body"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+on:
+  workflow_dispatch:
+jobs:
+  demo_app_authentication:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Use the token
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          gh api octocat
+agg https://asciinema.org/a/20055 demo.gifagg demo.cast demo.gif
 
